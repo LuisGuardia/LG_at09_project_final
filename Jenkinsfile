@@ -6,10 +6,10 @@ pipeline {
                 echo 'Building.'
             }
         }
-
         stage('Assemble') { 
             steps {
                 echo 'Compiling.'
+                sh 'chmod +x ./sampleWebApp/gradlew'
                 sh './sampleWebApp/gradlew assemble -p sampleWebApp/'
                 archiveArtifacts 'sampleWebApp/build/libs/*.jar'
             }
@@ -22,8 +22,8 @@ pipeline {
         }  
         stage('SonarQube') {
             steps {
-                echo 'Execute 'sonar cube'
-                sh './sampleWebApp/gradlew sonarcube -p sampleWebApp/'
+                echo 'Execute sonar cube'
+                sh './sampleWebApp/gradlew sonarqube -p sampleWebApp/'
             }            
         }
     } 
