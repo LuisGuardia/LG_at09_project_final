@@ -14,12 +14,18 @@ pipeline {
                 archiveArtifacts 'sampleWebApp/build/libs/*.jar'
             }
         }
-        stage('Code Analysis') {
+        stage('Unit Test') {
             steps {
                 echo 'Execute code analysis....'
-                sh './sampleWebApp/gradlew check -p sampleWebApp/'
-            }            
-        }  
+                sh './sampleWebApp/gradlew test -p sampleWebApp/'
+            } 
+            post {
+                always{
+                    junit "sampleWebApp/build/test-results/test/*.xml"
+                    archiveArtifacts 'sampleWebApp/build/reports/tests/test/*'
+                }
+            }           
+        }
         stage('SonarQube') {
             steps {
                 echo 'Execute sonar cube'
@@ -27,12 +33,5 @@ pipeline {
             }            
         }
     } 
-    post {
-        always {
-            mail to: 'g.luisalberto68@gmail.com',
-            subject: "Successfull Pipeline: ${currentBuild.fullDisplayName}",
-            body: "The pipeline ${env.BUILD_URL} completed successfully."
-        }
-    }
 }
 
