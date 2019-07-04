@@ -1,37 +1,36 @@
 pipeline {
-  agent any
-  stages {
-    stage('Build') {
-      steps {
-        echo 'Building.'
-      }
-    }
-    stage('Assemble') {
-      steps {
-        echo 'Compiling.'
-        sh 'chmod +x ./sampleWebApp/gradlew'
-        sh './sampleWebApp/gradlew assemble -p sampleWebApp/'
-        archiveArtifacts 'sampleWebApp/build/libs/*.jar'
-      }
-    }
-    stage('Code Analysis') {
-      steps {
-        echo 'Execute code analysis....'
-        sh './sampleWebApp/gradlew check -p sampleWebApp/'
-      }
-    }
-    stage('SonarQube') {
-      steps {
-        echo 'Execute sonar cube'
-        sh './sampleWebApp/gradlew sonarqube -p sampleWebApp/'
-      }
-    }
-  }
-  post {
-    always {
-      mail(to: 'g.luisalberto68@gmail.com', subject: "Successfull Pipeline: ${currentBuild.fullDisplayName}", body: "The pipeline ${env.BUILD_URL} completed successfully.")
-
-    }
-
-  }
+    agent any 
+    stages {
+        stage('Build') { 
+            steps {
+                echo 'Building.'
+            }
+        }
+        stage('Assemble') { 
+            steps {
+                echo 'Compiling.'
+                sh 'chmod +x ./sampleWebApp/gradlew'
+                sh './sampleWebApp/gradlew assemble -p sampleWebApp/'
+                archiveArtifacts 'sampleWebApp/build/libs/*.jar'
+            }
+        }
+        stage('Unit Test') {
+            steps {
+                echo 'Execute code analysis....'
+                sh './sampleWebApp/gradlew test -p sampleWebApp/'
+            } 
+            post {
+                always{
+                    junit "sampleWebApp/build/test-results/test/*.xml"
+                    archiveArtifacts 'sampleWebApp/build/reports/tests/test/*'
+                }
+            }           
+        }
+        stage('SonarQube') {
+            steps {
+                echo 'Execute sonar cube'
+                sh './sampleWebApp/gradlew sonarqube -p sampleWebApp/'
+            }            
+        }
+    } 
 }
